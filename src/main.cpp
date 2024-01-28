@@ -2,16 +2,35 @@
 #include "../inc/raylib.h"
 #include <vector>
 #include <random>
+#include <iomanip>
 
 #define GRID_COUNT 32
 #define GRID_SIZE 32
+
+#define SPRITESHEET_WIDTH 512
+#define SPRITESHEET_HEIGHT 512
+#define SPRITESHEET_COLUMNS 16
 
 double startTime = 0;
 double currentTime = 0;
 
 bool timePassed(double elapsed);
 
-class Viewpoint {
+int rowColEncoder(int row, int col) {
+    // if its not square this needs to change
+    int number = col * SPRITESHEET_COLUMNS + row + 1;
+    // printf("########the tile number is %d\n", number);
+    return number;
+}
+Vector2 rowColDecoder(int number) {
+    // if its not square this needs to change
+    int row = (number - 1) / SPRITESHEET_COLUMNS;
+    int col = (number - 1) % SPRITESHEET_COLUMNS;
+    // printf("the decoded row: %d, column: %d\n", row, col);
+    return {(float)col, (float)row};
+}
+
+class Viewpoint { 
     public:
     // viewpoint x and y is added to all drawn items
         int x{0};
@@ -42,8 +61,8 @@ class Spritesheet {
         float y;
 
         //size of the spritesheet
-        float width = 512;
-        float height = 512;
+        float width = SPRITESHEET_WIDTH;
+        float height = SPRITESHEET_HEIGHT;
         Image spritesheetImg;
         Texture2D spritesheetTex;
 
@@ -52,6 +71,7 @@ class Spritesheet {
 
         Spritesheet() {
             // origin top, left, of spritesheet to center
+
             x = (GRID_COUNT*GRID_SIZE/2)-(width/2);
             y = (GRID_COUNT*GRID_SIZE/2)-(height/2);
 
@@ -69,12 +89,12 @@ class Spritesheet {
             if (timePassed(1))
             {
                 // the origin of the spritesheet + the offset of the viewpoint
-                printf("my coordinates are %f, %f\n", x, y);
+                // printf("my coordinates are %f, %f\n", x, y);
             }
         }
 
         void drawRec() {
-            DrawRectangle(x, y, width, height, WHITE);
+            DrawRectangle(x, y, width, height, Color{132, 117, 119, 255});
             DrawTexture(spritesheetTex, x, y, WHITE);
         }
 
@@ -83,7 +103,7 @@ class Spritesheet {
             Vector2 mousePos = GetMousePosition();
             if(CheckCollisionPointRec(mousePos, collisionRec) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 calculateSpriteClicked();
-                std::cout << "clicked" << std::endl << std::flush;
+                // std::cout << "clicked" << std::endl << std::flush;
             }
         }
 
@@ -93,9 +113,10 @@ class Spritesheet {
             int yOriginOffset = mousePos.y - y;
             int row = xOriginOffset / GRID_SIZE;
             int column = yOriginOffset / GRID_SIZE;
-            printf("the square clicked is %d, %d\n", row, column);
-            selected.x = row;
-            selected.y = column;
+            // printf("the sprite tile clicked is row: %d, column: %d\n", row, column);
+            selected.x = column;
+            selected.y = row;
+            int num = rowColEncoder(row, column);
             // DrawRectangle(xViewpoint+x +(row*GRID_SIZE), yViewpoint+y+(column*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);
         }
 
@@ -131,6 +152,7 @@ class UI {
         }
 };
 
+
 class Tilemap {
     public:
 
@@ -159,12 +181,38 @@ class Tilemap {
         }
 
 
-        void update(int xViewpoint, int yViewpoint) {
-            bool clicked = detectMapClicked(xViewpoint, yViewpoint);
-            if(clicked) {
-                printf("*****the square clicked is %d, %d\n", row, column);
-                // need to pass selected sprite from ui, then assign its x, y pair to the tilemap position
-                tileMap[row][column] = 1;
+        void update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen) {
+            if(!windowOpen) {
+                bool clicked = detectMapClicked(xViewpoint, yViewpoint);
+                if(clicked) {
+                    // printf("the tilemap square clicked is %d, %d\n", row, column);
+                    // need to pass selected sprite from ui, then assign its x, y pair to the tilemap position
+                    tileMap[row][column] = rowColEncoder(selected.y, selected.x);
+                    // print the new tile map
+                    std::cout << "{\n";
+                    std::cout << "{\n";
+                    for (int i = 0; i < 48; ++i) {
+                        std::cout << "  {";
+                        for (int j = 0; j < 48; ++j) {
+                            // Use setw(3) to pad numbers to 3 digits
+                            std::cout << std::setw(3) << tileMap[j][i];
+
+                            // Add comma and space for elements except the last one
+                            if (j < 47) {
+                                std::cout << ", ";
+                            }
+                        }
+                        std::cout << "}\n";
+                        
+                        // Add comma and space for rows except the last one
+                        if (i < 47) {
+                            std::cout << ",";
+                        }
+                        
+                        std::cout << "\n";
+                    }
+                    std::cout << "}\n";
+                }
             }
 
 
@@ -172,23 +220,25 @@ class Tilemap {
             if (timePassed(1))
             {
                 // the origin of the spritesheet + the offset of the viewpoint
-                printf("the maps screen coordinates are %f, %f\n", x+xViewpoint, y+yViewpoint);
+                // printf("the maps screen coordinates are %f, %f\n", x+xViewpoint, y+yViewpoint);
             }
         }
 
         void drawRec(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {
-            DrawRectangle(x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE, RED);
+            // DrawRectangle(x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE, RED);ma
             // draw tileMap
             for(int i = 0; i < 48; i++) {
                 for(int j = 0; j < 48; j++) {
-                    if(tileMap[i][j] == 0) {
-                        DrawRectangle(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, GREEN);
-                    }
-                    else if(tileMap[i][j] == 1) {
-                        
-                        //this doesnt need selected texture, it just draws what in the array... 3d array? containing x -> y offsets to draw, look above for other area ud need to change
-                        Rectangle selectedArea = {selected.x*GRID_SIZE, selected.y*GRID_SIZE, GRID_SIZE, GRID_SIZE};
-                        DrawTextureRec(spritesheetTex, selectedArea, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
+                    // draw canvas color if nothing there
+                    int currentTileNumber = tileMap[i][j];
+                    if(currentTileNumber == 0) {
+                        DrawRectangle(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, Color{251, 251, 242, 255});
+                        DrawRectangleLines(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);        
+                    } else {
+                        Vector2 offset = rowColDecoder(currentTileNumber);
+                        // printf("the offset is row: %f, col: %f\n", offset.y, offset.x);
+                        // if(timePassed(1))
+                        DrawTextureRec(spritesheetTex, {GRID_SIZE*offset.x, GRID_SIZE*offset.y, GRID_SIZE, GRID_SIZE}, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
                     }
                 }
             }
@@ -198,7 +248,7 @@ class Tilemap {
             Rectangle collisionRec = {x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE};
             Vector2 mousePos = GetMousePosition();
             if(CheckCollisionPointRec(mousePos, collisionRec) && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))) {
-                std::cout << "clicked" << std::endl << std::flush;
+                // std::cout << "clicked" << std::endl << std::flush;
                 return calculateSquareClicked(xViewpoint, yViewpoint);
             }
             return false;
@@ -210,7 +260,7 @@ class Tilemap {
             int yOriginOffset = mousePos.y - (yViewpoint + y);
             row = xOriginOffset / GRID_SIZE;
             column = yOriginOffset / GRID_SIZE;
-            printf("the square clicked is %d, %d\n", row, column);
+            // printf("the tilemap tile clicked is %d, %d\n", row, column);
             return true;
             // DrawRectangle(xViewpoint+x +(row*GRID_SIZE), yViewpoint+y+(column*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);
         }
@@ -241,7 +291,7 @@ bool timePassed(double elapsed) {
 void detectRectangleClick(Rectangle collisionRec) {
     Vector2 mousePos = GetMousePosition();
     if(CheckCollisionPointRec(mousePos, collisionRec) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        std::cout << "clicked" << std::endl << std::flush;
+        // std::cout << "clicked" << std::endl << std::flush;
     }
 }
 
@@ -260,11 +310,11 @@ int main() {
     {
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(Color{229, 230, 228, 255});
         
         viewpoint->move();
         tilemap->drawRec(viewpoint->x, viewpoint->y, ui->spritesheet->spritesheetTex, ui->spritesheet->selected);   
-        tilemap->update(viewpoint->x, viewpoint->y);
+        tilemap->update(viewpoint->x, viewpoint->y, ui->spritesheet->selected, ui->windowsOpen[0]);
         ui->update();
         ui->draw();
 

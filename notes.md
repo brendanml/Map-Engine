@@ -5,4 +5,4 @@
 - etc...
 
 
-idea: list of all possible vectors
+idea: list of all possible vectorsmakm
