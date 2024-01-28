@@ -94,6 +94,8 @@ class Spritesheet {
             int row = xOriginOffset / GRID_SIZE;
             int column = yOriginOffset / GRID_SIZE;
             printf("the square clicked is %d, %d\n", row, column);
+            selected.x = row;
+            selected.y = column;
             // DrawRectangle(xViewpoint+x +(row*GRID_SIZE), yViewpoint+y+(column*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);
         }
 
@@ -139,20 +141,34 @@ class Tilemap {
         // 48 x 48 of (32x32) tiles
         int widthTiles = 48;
         int heightTiles = 48;
+        int tileMap[48][48];
+
+        int row = 0;
+        int column = 0;
 
         Tilemap() {
-            Vector2 tileMap[widthTiles][heightTiles];
-            // set all tiles to 0,0
-            for(int i = 0; i < widthTiles; i++) {
-                for(int j = 0; j < heightTiles; j++) {
-                    tileMap[i][j] = {0, 0};
+            //initialize tilemap with 0's
+            for(int i = 0; i < 48; i++) {
+                for(int j = 0; j < 48; j++) {
+                    tileMap[i][j] = 0;
+                    // if(i == 4) {
+                    //     tileMap[i][j] = 1;
+                    // }
                 }
             }
         }
 
 
         void update(int xViewpoint, int yViewpoint) {
-            detectMapClicked(xViewpoint, yViewpoint);
+            bool clicked = detectMapClicked(xViewpoint, yViewpoint);
+            if(clicked) {
+                printf("*****the square clicked is %d, %d\n", row, column);
+                // need to pass selected sprite from ui, then assign its x, y pair to the tilemap position
+                tileMap[row][column] = 1;
+            }
+
+
+
             if (timePassed(1))
             {
                 // the origin of the spritesheet + the offset of the viewpoint
@@ -160,27 +176,42 @@ class Tilemap {
             }
         }
 
-        void drawRec(int xViewpoint, int yViewpoint) {
+        void drawRec(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {
             DrawRectangle(x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE, RED);
             // draw tileMap
-        }
-
-        void detectMapClicked(int xViewpoint, int yViewpoint) {
-            Rectangle collisionRec = {x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE};
-            Vector2 mousePos = GetMousePosition();
-            if(CheckCollisionPointRec(mousePos, collisionRec) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                std::cout << "clicked" << std::endl << std::flush;
-                calculateSquareClicked(xViewpoint, yViewpoint);
+            for(int i = 0; i < 48; i++) {
+                for(int j = 0; j < 48; j++) {
+                    if(tileMap[i][j] == 0) {
+                        DrawRectangle(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, GREEN);
+                    }
+                    else if(tileMap[i][j] == 1) {
+                        
+                        //this doesnt need selected texture, it just draws what in the array... 3d array? containing x -> y offsets to draw, look above for other area ud need to change
+                        Rectangle selectedArea = {selected.x*GRID_SIZE, selected.y*GRID_SIZE, GRID_SIZE, GRID_SIZE};
+                        DrawTextureRec(spritesheetTex, selectedArea, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
+                    }
+                }
             }
         }
 
-        void calculateSquareClicked(int xViewpoint, int yViewpoint) {
+        bool detectMapClicked(int xViewpoint, int yViewpoint) {
+            Rectangle collisionRec = {x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE};
+            Vector2 mousePos = GetMousePosition();
+            if(CheckCollisionPointRec(mousePos, collisionRec) && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))) {
+                std::cout << "clicked" << std::endl << std::flush;
+                return calculateSquareClicked(xViewpoint, yViewpoint);
+            }
+            return false;
+        }
+
+        bool calculateSquareClicked(int xViewpoint, int yViewpoint) {
             Vector2 mousePos = GetMousePosition();
             int xOriginOffset = mousePos.x - (xViewpoint + x);
             int yOriginOffset = mousePos.y - (yViewpoint + y);
-            int row = xOriginOffset / GRID_SIZE;
-            int column = yOriginOffset / GRID_SIZE;
+            row = xOriginOffset / GRID_SIZE;
+            column = yOriginOffset / GRID_SIZE;
             printf("the square clicked is %d, %d\n", row, column);
+            return true;
             // DrawRectangle(xViewpoint+x +(row*GRID_SIZE), yViewpoint+y+(column*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);
         }
 
@@ -232,7 +263,7 @@ int main() {
         ClearBackground(BLACK);
         
         viewpoint->move();
-        tilemap->drawRec(viewpoint->x, viewpoint->y);   
+        tilemap->drawRec(viewpoint->x, viewpoint->y, ui->spritesheet->spritesheetTex, ui->spritesheet->selected);   
         tilemap->update(viewpoint->x, viewpoint->y);
         ui->update();
         ui->draw();
