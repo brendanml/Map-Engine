@@ -17,16 +17,12 @@ double currentTime = 0;
 bool timePassed(double elapsed);
 
 int rowColEncoder(int row, int col) {
-    // if its not square this needs to change
     int number = col * SPRITESHEET_COLUMNS + row + 1;
-    // printf("########the tile number is %d\n", number);
     return number;
 }
 Vector2 rowColDecoder(int number) {
-    // if its not square this needs to change
     int row = (number - 1) / SPRITESHEET_COLUMNS;
     int col = (number - 1) % SPRITESHEET_COLUMNS;
-    // printf("the decoded row: %d, column: %d\n", row, col);
     return {(float)col, (float)row};
 }
 
@@ -70,8 +66,6 @@ class Spritesheet {
         Vector2 selected = {0,0};
 
         Spritesheet() {
-            // origin top, left, of spritesheet to center
-
             x = (GRID_COUNT*GRID_SIZE/2)-(width/2);
             y = (GRID_COUNT*GRID_SIZE/2)-(height/2);
 
@@ -86,16 +80,19 @@ class Spritesheet {
 
         void update() {
             detectSpriteClick();
-            if (timePassed(1))
-            {
-                // the origin of the spritesheet + the offset of the viewpoint
-                // printf("my coordinates are %f, %f\n", x, y);
-            }
         }
 
-        void drawRec() {
+        void draw() {
             DrawRectangle(x, y, width, height, Color{132, 117, 119, 255});
             DrawTexture(spritesheetTex, x, y, WHITE);
+            drawGrid();
+        }
+
+        void drawGrid() {
+            for(int i = 0; i <= SPRITESHEET_WIDTH/GRID_SIZE; i++) {
+                DrawLine(x+(i*GRID_SIZE), y, x+(i*GRID_SIZE), y+height, BLACK);
+                DrawLine(x, y+(i*GRID_SIZE), x+width, y+(i*GRID_SIZE), BLACK);
+            }
         }
 
         void detectSpriteClick() {
@@ -103,7 +100,6 @@ class Spritesheet {
             Vector2 mousePos = GetMousePosition();
             if(CheckCollisionPointRec(mousePos, collisionRec) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 calculateSpriteClicked();
-                // std::cout << "clicked" << std::endl << std::flush;
             }
         }
 
@@ -113,45 +109,11 @@ class Spritesheet {
             int yOriginOffset = mousePos.y - y;
             int row = xOriginOffset / GRID_SIZE;
             int column = yOriginOffset / GRID_SIZE;
-            // printf("the sprite tile clicked is row: %d, column: %d\n", row, column);
             selected.x = column;
             selected.y = row;
             int num = rowColEncoder(row, column);
-            // DrawRectangle(xViewpoint+x +(row*GRID_SIZE), yViewpoint+y+(column*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);
-        }
-
-        void drawSprite(int xViewpoint, int yViewpoint) {
-            // DrawTexture(spritesheetTex, xViewpoint, yViewpoint, WHITE);
         }
 };
-
-class UI {
-    public:
-        bool windowsOpen[3] = {false, false, false};
-
-        //index 0 is the spritesheet
-        Spritesheet *spritesheet;
-        UI() {
-            spritesheet = new Spritesheet();
-        }
-        ~UI() {
-            delete spritesheet;
-        }
-
-        void draw() {
-            if(windowsOpen[0]) {
-                spritesheet->update();
-                spritesheet->drawRec();
-            }
-        }
-
-        void update() {
-            if(IsKeyPressed(KEY_ONE)) {
-                windowsOpen[0] = !windowsOpen[0];
-            }
-        }
-};
-
 
 class Tilemap {
     public:
@@ -182,13 +144,23 @@ class Tilemap {
 
 
         void update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen) {
+            handleClick(xViewpoint, yViewpoint, selected, windowOpen);
+        }
+
+        void handleClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen) {
             if(!windowOpen) {
+
                 bool clicked = detectMapClicked(xViewpoint, yViewpoint);
                 if(clicked) {
                     // printf("the tilemap square clicked is %d, %d\n", row, column);
                     // need to pass selected sprite from ui, then assign its x, y pair to the tilemap position
                     tileMap[row][column] = rowColEncoder(selected.y, selected.x);
-                    // print the new tile map
+                }
+            }
+        }   
+
+        void printTileMap() {
+            // print the new tile map
                     std::cout << "{\n";
                     std::cout << "{\n";
                     for (int i = 0; i < 48; ++i) {
@@ -212,28 +184,17 @@ class Tilemap {
                         std::cout << "\n";
                     }
                     std::cout << "}\n";
-                }
-            }
-
-
-
-            if (timePassed(1))
-            {
-                // the origin of the spritesheet + the offset of the viewpoint
-                // printf("the maps screen coordinates are %f, %f\n", x+xViewpoint, y+yViewpoint);
-            }
         }
 
-        void drawRec(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {
-            // DrawRectangle(x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE, RED);ma
+        void draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {
+            DrawRectangle(x+xViewpoint, y+yViewpoint, (float)widthTiles*GRID_SIZE, (float)heightTiles*GRID_SIZE, WHITE);
             // draw tileMap
             for(int i = 0; i < 48; i++) {
                 for(int j = 0; j < 48; j++) {
                     // draw canvas color if nothing there
                     int currentTileNumber = tileMap[i][j];
                     if(currentTileNumber == 0) {
-                        DrawRectangle(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, Color{251, 251, 242, 255});
-                        DrawRectangleLines(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, BLACK);        
+                        DrawRectangle(x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE), GRID_SIZE, GRID_SIZE, Color{251, 251, 242, 255});       
                     } else {
                         Vector2 offset = rowColDecoder(currentTileNumber);
                         // printf("the offset is row: %f, col: %f\n", offset.y, offset.x);
@@ -241,6 +202,15 @@ class Tilemap {
                         DrawTextureRec(spritesheetTex, {GRID_SIZE*offset.x, GRID_SIZE*offset.y, GRID_SIZE, GRID_SIZE}, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
                     }
                 }
+            }
+            drawGrid(xViewpoint, yViewpoint);
+        }
+
+        void drawGrid(int xViewpoint, int yViewpoint) {
+            // draw grid that overlays the tilemap
+            for(int i = 0; i <= widthTiles; i++) {
+                DrawLine((x+xViewpoint)+(i*GRID_SIZE), y+yViewpoint, (x+xViewpoint)+(i*GRID_SIZE), y+yViewpoint+(heightTiles*GRID_SIZE), BLACK);
+                DrawLine(x+xViewpoint, (y+yViewpoint)+(i*GRID_SIZE), x+xViewpoint+(widthTiles*GRID_SIZE), y+yViewpoint+(i*GRID_SIZE), BLACK);
             }
         }
 
@@ -267,6 +237,48 @@ class Tilemap {
 
         void drawSprite(int xViewpoint, int yViewpoint) {
             // DrawTexture(spritesheetTex, xViewpoint, yViewpoint, WHITE);
+
+        }
+};
+
+class UI {
+    public:
+        bool windowsOpen[3] = {false, false, false};
+
+        // need a print button for tilemaps
+
+
+        //index 1 -> controls menu
+        // index 2 -> toggle sprite sheet
+        // index 3 -> toggle tile map editing
+
+
+        Spritesheet *spritesheet;
+        Tilemap *tilemap;
+        UI() {
+            tilemap = new Tilemap();
+            spritesheet = new Spritesheet();
+        }
+        ~UI() {
+            delete spritesheet;
+            delete tilemap;
+        }
+
+        void draw(int xViewpoint, int yViewpoint) {
+            tilemap->draw(xViewpoint, yViewpoint, spritesheet->spritesheetTex, spritesheet->selected);
+            if(windowsOpen[0]) {
+                spritesheet->draw();
+            }
+        }
+
+        void update(int xViewpoint, int yViewpoint) {
+            tilemap->update(xViewpoint, yViewpoint, spritesheet->selected, windowsOpen[0]);
+            if(windowsOpen[0]) {
+                spritesheet->update();
+            }
+            if(IsKeyPressed(KEY_ONE)) {
+                windowsOpen[0] = !windowsOpen[0];
+            }
         }
 };
 
@@ -302,7 +314,6 @@ int main() {
     SetTargetFPS(60);
 
     Viewpoint *viewpoint = new Viewpoint();
-    Tilemap *tilemap = new Tilemap();
     UI *ui = new UI();
     
 
@@ -312,18 +323,18 @@ int main() {
         BeginDrawing();
         ClearBackground(Color{229, 230, 228, 255});
         
+        // update -> move -> draw
+        ui->update(viewpoint->x, viewpoint->y);
         viewpoint->move();
-        tilemap->drawRec(viewpoint->x, viewpoint->y, ui->spritesheet->spritesheetTex, ui->spritesheet->selected);   
-        tilemap->update(viewpoint->x, viewpoint->y, ui->spritesheet->selected, ui->windowsOpen[0]);
-        ui->update();
-        ui->draw();
+        ui->draw(viewpoint->x, viewpoint->y);
+
 
 
         
         EndDrawing();
     }
-    delete viewpoint;
     delete ui;
+    delete viewpoint;
     return 0;
 }
 

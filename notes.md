@@ -5,4 +5,6 @@
 - etc...
 
 
-idea: list of all possible vectorsmakm
+idea: list of all possible vectorsmakmmmmam
+
+- game with underground that has locality caves, with some finite number of depths matching their top world coordinates?
