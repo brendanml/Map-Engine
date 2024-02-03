@@ -6,8 +6,8 @@
 - Toggle spritesheet View: 1
 - Camera control/movement: WASD
 - Select sprite from sheet: click
-- Place texture background: shift + click
-- Place texture foreground: ctrl + click
+- Place texture: click
+- Place texture foreground: cmd + click
 - Print Tile maps: right click
 
 ## What is it?
