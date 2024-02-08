@@ -1,4 +1,37 @@
 #include "tilemap.h"
+#include <fstream>
+#include <string>
+
+Tilemap::Tilemap() {
+    init();
+}
+
+void Tilemap::init() {
+    // std::vector<Vector2d> points;
+    //in is the name of the opened file
+    std::string filename = "tilemap.txt";
+    std::ifstream in(filename);
+
+    if(!in.is_open()) { std::cerr << "error opening file" << std::endl; }
+
+    float tileNum{0};
+    // let i be the row
+    int i = 0;
+    // let j be the column
+    int j = 0;
+    while(in >> tileNum) {
+        std::cout << "tileNum: " << tileNum << std::endl;
+        float offsetX, offsetY;
+        in >> offsetX >> offsetY;
+        Tile newTile(Vector2{offsetX, offsetY}, tileNum);
+        tileMap[i][j] = newTile;
+        j++;
+        if(j == 48) {
+            j = 0;
+            i++;
+        }
+    }
+}
 
 void Tilemap::update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode) {
     if(isToolActive && !tbClicked) {
@@ -23,9 +56,21 @@ void Tilemap::handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, boo
             // tileMap[row][column] = rowColEncoder(selected.y, selected.x);
         }
     }
-}   
+}
+
+void Tilemap::outputMap() {
+    std::ofstream file;
+    file.open("tilemap.txt");
+    for(int i = 0; i < widthTiles; i++) {
+        for(int j = 0; j < heightTiles; j++) {
+            file << tileMap[i][j].number << " " << tileMap[i][j].offset.x << " " << tileMap[i][j].offset.y << std::endl;
+        }
+    }
+    file.close();
+}
 
 void Tilemap::printTileMap() {
+    // TODO: output tile objects to txt file
     // print the new tile maps
             std::cout << "Background Tile Map" << std::endl;
             std::cout << "{\n";
@@ -48,28 +93,7 @@ void Tilemap::printTileMap() {
                 std::cout << "\n";
             }
             std::cout << "}\n";
-
-            std::cout << "Foreground Tile Map" << std::endl;
-            std::cout << "{\n";
-            for (int i = 0; i < 48; ++i) {
-                std::cout << "{";
-                for (int j = 0; j < 48; ++j) {
-                    std::cout << tileMapFG[j][i].number;
-                    // Add comma and space for elements except the last one
-                    if (j < 47) {
-                        std::cout << ", ";
-                    }
-                }
-                std::cout << "}\n";
-                
-                // Add comma and space for rows except the last one
-                if (i < 47) {
-                    std::cout << ",";
-                }
-                
-                std::cout << "\n";
-            }
-            std::cout << "}\n";
+    outputMap();
 }
 
 void Tilemap::draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {

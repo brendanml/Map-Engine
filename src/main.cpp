@@ -14,6 +14,14 @@
 
 using namespace std;
 
+//TODO:
+// implement save button
+// save button
+// hotkeys for everything in toolbar
+// implement flood fill
+// implement eraser
+
+
 class Viewpoint { 
     public:
     // viewpoint x and y is added to all drawn items 
@@ -105,7 +113,7 @@ class UI {
 };
 
 int main() {
-    InitWindow(GRID_COUNT*GRID_SIZE, GRID_COUNT*GRID_SIZE, "ft2");
+    InitWindow(GRID_COUNT*GRID_SIZE, GRID_COUNT*GRID_SIZE, "Map Editor");
     SetWindowPosition(0,0);
     SetTargetFPS(60);
 

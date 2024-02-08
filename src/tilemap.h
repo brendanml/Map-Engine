@@ -18,11 +18,14 @@ class Tilemap {
 
         int row = 0;
         int column = 0;
+        Tilemap();
+        void init();
 
 
         void update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode);
         void handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool traceMode);
 
+        void outputMap();
         void printTileMap();
 
         void draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected);
