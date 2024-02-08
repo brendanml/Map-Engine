@@ -102,12 +102,19 @@ class UI {
             //     traceMode = !traceMode;
             // }
             toolbar.update();
-            tilemap.update(xViewpoint, yViewpoint, spritesheet.selected, windowsOpen[0], toolbar.select->isToolActive, tbClicked, traceMode);
+            tilemap.update(xViewpoint, yViewpoint, spritesheet.selected, windowsOpen[0], toolbar.select->isToolActive, tbClicked, traceMode, toolbar.flood->isToolActive, toolbar.eraser->isToolActive);
             if(windowsOpen[0]) {
                 spritesheet.update();
             }
             if(IsKeyPressed(KEY_ONE)) {
                 windowsOpen[0] = !windowsOpen[0];
+            }
+        }
+
+        void output() {
+            if(IsKeyPressed(KEY_FOUR)) {
+                tilemap.outputMap(tilemap.tileMap, std::string("tilemap.txt"));
+                tilemap.outputMap(tilemap.tileMapFG, std::string("fg.txt"));
             }
         }
 };
@@ -128,10 +135,8 @@ int main() {
         
         ui.update(viewpoint.x, viewpoint.y);
         viewpoint.move();
+        ui.output();
         ui.draw(viewpoint.x, viewpoint.y);
-        if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
-            ui.tilemap.printTileMap();
-        }
         EndDrawing();
     }
     return 0;

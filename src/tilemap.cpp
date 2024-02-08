@@ -1,15 +1,15 @@
 #include "tilemap.h"
 #include <fstream>
-#include <string>
+
+// LOTS OF PLACES WERE JUST USING INTS FOR THE SIZE OF ARRAYS, WOULD BE A GOOD IDEA TO USE DYNAMIC ARRAYS
 
 Tilemap::Tilemap() {
-    init();
+    init(tileMap, "tilemap.txt");
+    init(tileMapFG, "fg.txt");
 }
 
-void Tilemap::init() {
-    // std::vector<Vector2d> points;
+void Tilemap::init(Tile (&tilemap)[48][48], std::string filename) {
     //in is the name of the opened file
-    std::string filename = "tilemap.txt";
     std::ifstream in(filename);
 
     if(!in.is_open()) { std::cerr << "error opening file" << std::endl; }
@@ -20,11 +20,10 @@ void Tilemap::init() {
     // let j be the column
     int j = 0;
     while(in >> tileNum) {
-        std::cout << "tileNum: " << tileNum << std::endl;
         float offsetX, offsetY;
         in >> offsetX >> offsetY;
         Tile newTile(Vector2{offsetX, offsetY}, tileNum);
-        tileMap[i][j] = newTile;
+        tilemap[i][j] = newTile;
         j++;
         if(j == 48) {
             j = 0;
@@ -33,67 +32,93 @@ void Tilemap::init() {
     }
 }
 
-void Tilemap::update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode) {
-    if(isToolActive && !tbClicked) {
-        handleAClick(xViewpoint, yViewpoint, selected, windowOpen, traceMode);
+void Tilemap::update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode, bool floodMode, bool eraserMode) {
+    if((isToolActive || floodMode || eraserMode) && !tbClicked) {
+        handleAClick(xViewpoint, yViewpoint, selected, windowOpen, traceMode, floodMode, eraserMode);
     }
 }
 
-void Tilemap::handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool traceMode) {
+void Tilemap::handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool traceMode, bool floodMode, bool eraserMode) {
     if(!windowOpen || traceMode) {
         bool clicked = detectMapClicked(xViewpoint, yViewpoint);
         if(clicked && IsKeyDown(KEY_LEFT_SUPER)) {
             // printf("the tilemap square clicked is %f, %f, numer: %d\n", newTile.row, newTile.column, newTile.number);
-            std::cout << "LEFT CMD CLICKED" << std::endl << std::flush;
             Tile newTile(Vector2{selected.y, selected.x}, rowColEncoder(selected.y, selected.x));
             tileMapFG[row][column] = newTile;
+            if(floodMode) {
+                for(int i = 0; i < 4; i++) {
+                    for(int j = 0; j < 4; j++) {
+                        int rowIndex = row+i;
+                        int columnIndex = column+j;
+                        if(rowIndex < 48 && columnIndex < 48) {
+                            tileMap[rowIndex][columnIndex] = newTile;
+                        }
+                    }
+                }
+            }
+            if(eraserMode) {
+                Tile newTile = Tile();
+                if(IsKeyDown(KEY_Z)) {
+                    for(int i = 0; i < 4; i++) {
+                        for(int j = 0; j < 4; j++) {
+                            int rowIndex = row+i;
+                            int columnIndex = column+j;
+                            if(rowIndex < 48 && columnIndex < 48) {
+                                tileMapFG[rowIndex][columnIndex] = newTile;
+                            }
+                        }
+                }
+                } else {
+                    tileMapFG[row][column] = Tile();
+                }
+            }
         }
         else if(clicked) {
             // printf("the tilemap square clicked is %d, %d\n", row, column);
             // need to pass selected sprite from ui, then assign its x, y pair to the tilemap position
             Tile newTile(Vector2{selected.y, selected.x}, rowColEncoder(selected.y, selected.x));
             tileMap[row][column] = newTile;
-            // tileMap[row][column] = rowColEncoder(selected.y, selected.x);
+            if(floodMode) {
+                for(int i = 0; i < 4; i++) {
+                    for(int j = 0; j < 4; j++) {
+                        int rowIndex = row+i;
+                        int columnIndex = column+j;
+                        if(rowIndex < 48 && columnIndex < 48) {
+                            tileMap[rowIndex][columnIndex] = newTile;
+                        }
+                    }
+                }
+            }
+            if(eraserMode) {
+                Tile newTile = Tile();
+                if(IsKeyDown(KEY_Z)) {
+                    for(int i = 0; i < 4; i++) {
+                        for(int j = 0; j < 4; j++) {
+                            int rowIndex = row+i;
+                            int columnIndex = column+j;
+                            if(rowIndex < 48 && columnIndex < 48) {
+                                tileMap[rowIndex][columnIndex] = newTile;
+                            }
+                        }
+                }
+                } else {
+                    tileMap[row][column] = Tile();
+                }
+            }
         }
     }
 }
 
-void Tilemap::outputMap() {
+void Tilemap::outputMap(Tile (&tilemap)[48][48], std::string filename) {
     std::ofstream file;
-    file.open("tilemap.txt");
+    file.open(filename);
     for(int i = 0; i < widthTiles; i++) {
         for(int j = 0; j < heightTiles; j++) {
-            file << tileMap[i][j].number << " " << tileMap[i][j].offset.x << " " << tileMap[i][j].offset.y << std::endl;
+            file << tilemap[i][j].number << " " << tilemap[i][j].offset.x << " " << tilemap[i][j].offset.y << std::endl;
         }
     }
     file.close();
-}
-
-void Tilemap::printTileMap() {
-    // TODO: output tile objects to txt file
-    // print the new tile maps
-            std::cout << "Background Tile Map" << std::endl;
-            std::cout << "{\n";
-            for (int i = 0; i < 48; ++i) {
-                std::cout << "{";
-                for (int j = 0; j < 48; ++j) {
-                    std::cout << tileMap[j][i].number;
-                    // Add comma and space for elements except the last one
-                    if (j < 47) {
-                        std::cout << ", ";
-                    }
-                }
-                std::cout << "}";
-                
-                // Add comma and space for rows except themak last one
-                if (i < 47) {
-                    std::cout << ",";
-                }
-                
-                std::cout << "\n";
-            }
-            std::cout << "}\n";
-    outputMap();
+    std::cout << "saving your map..." << std::endl << std::flush;
 }
 
 void Tilemap::draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected) {
@@ -106,12 +131,12 @@ void Tilemap::draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vec
         for(int j = 0; j < 48; j++) {
             // draw canvas color if nothing there
             int currentTileNumber = tileMap[i][j].number;
-            if(currentTileNumber != 0) {
+            if(currentTileNumber != 0 && !IsKeyDown(KEY_C)) {
                 Vector2 offset = tileMap[i][j].offset;
                 DrawTextureRec(spritesheetTex, {GRID_SIZE*offset.x, GRID_SIZE*offset.y, GRID_SIZE, GRID_SIZE}, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
             }
             int currentFGTileNumber = tileMapFG[i][j].number;
-            if(currentFGTileNumber != 0) { 
+            if(currentFGTileNumber != 0 && !IsKeyDown(KEY_X)) { 
                 Vector2 offsetFG = tileMapFG[i][j].offset;
                 DrawTextureRec(spritesheetTex, {GRID_SIZE*offsetFG.x, GRID_SIZE*offsetFG.y, GRID_SIZE, GRID_SIZE}, {x+xViewpoint+(i*GRID_SIZE), y+yViewpoint+(j*GRID_SIZE)}, WHITE);
             }

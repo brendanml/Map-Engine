@@ -16,7 +16,7 @@ class Button {
         float texYOffset = 0;
         bool isToolActive = false;
         Button();
-        Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int texYOffset);
+        Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int texYOffset, bool isToolActive);
         void update();
 
         void draw();

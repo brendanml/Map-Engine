@@ -14,6 +14,8 @@ class Toolbar {
         std::vector<Button> buttons;
         int selectedButton = 1;
         Button *select;
+        Button *flood;
+        Button *eraser;
         Toolbar();
         ~Toolbar();
         void constructButtons();

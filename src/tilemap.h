@@ -19,14 +19,13 @@ class Tilemap {
         int row = 0;
         int column = 0;
         Tilemap();
-        void init();
+        void init(Tile (&tilemap)[48][48], std::string filename);
 
 
-        void update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode);
-        void handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool traceMode);
+        void update(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool isToolActive, bool tbClicked, bool traceMode, bool floodMode, bool eraserMode);
+        void handleAClick(int xViewpoint, int yViewpoint, Vector2 selected, bool windowOpen, bool traceMode, bool floodMode, bool eraserMode);
 
-        void outputMap();
-        void printTileMap();
+        void outputMap(Tile (&tilemap)[48][48], std::string filename);
 
         void draw(int xViewpoint, int yViewpoint, Texture2D spritesheetTex, Vector2 selected);
 

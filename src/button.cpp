@@ -1,8 +1,8 @@
 #include "button.h"
 Button::Button() {
 }
-Button::Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int texYOffset) 
-: x(x), y(y), dimension(dimension), uiTex(uiTex), texXOffset(texXOffset), texYOffset(texYOffset){
+Button::Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int texYOffset, bool isToolActive) 
+: x(x), y(y), dimension(dimension), uiTex(uiTex), texXOffset(texXOffset), texYOffset(texYOffset), isToolActive(isToolActive){
 }
 void Button::update() {
     //some stuff

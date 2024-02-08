@@ -6,6 +6,8 @@ Toolbar::Toolbar() {
     y = offset;
     constructButtons();
     select = &buttons[0];
+    flood = &buttons[1];
+    eraser = &buttons[2];
 }
 
 Toolbar::~Toolbar() {
@@ -18,11 +20,14 @@ void Toolbar::constructButtons() {
     int buttonDimension = width-(2*buttonOffset);
     Image uiImg = LoadImage("assets/uisheet.png");
     uiTex = LoadTextureFromImage(uiImg);
-    buttons.push_back(Button(buttonDimension, x+buttonOffset, y+currentButtonOffset, uiTex, 0, 0));
+    // here were priming this button to be the first active tool
+    buttons.push_back(Button(buttonDimension, x+buttonOffset, y+currentButtonOffset, uiTex, 0, 0, true));
     buttonCount++;
-    currentButtonOffset += buttonDimension + currentButtonOffset;
-    buttons.push_back(Button(buttonDimension, x+buttonOffset, y+currentButtonOffset, uiTex, 32, 0));
+    currentButtonOffset += buttonDimension + buttonOffset;
+    buttons.push_back(Button(buttonDimension, x+buttonOffset, y+currentButtonOffset, uiTex, 32, 0, false));
     buttonCount++;
+    currentButtonOffset += buttonDimension + buttonOffset;
+    buttons.push_back(Button(buttonDimension, x+buttonOffset, y+currentButtonOffset, uiTex, 64, 0, false));
 }
 
 void Toolbar::update() {
