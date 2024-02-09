@@ -1,4 +1,4 @@
-# Map Editor
+# Map Engine
 - Map Editor is a tool for game developers. Put simply: It takes in two text files and outputs the edited 
 
 ## Why did I build this?
