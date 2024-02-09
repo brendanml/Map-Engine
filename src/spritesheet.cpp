@@ -21,7 +21,8 @@ void Spritesheet::update() {
 
 void Spritesheet::draw(bool traceMode) {
     if(traceMode) {
-        DrawTexture(spritesheetTex, x, y, WHITE);
+        DrawTexture(spritesheetTex, x, y, Color{255, 255, 255, 200});
+        DrawRectangle(x, y, SPRITESHEET_SIZE, SPRITESHEET_SIZE, Color{255, 255, 255, 100});
     }
     else {
         DrawRectangle(x, y, SPRITESHEET_SIZE, SPRITESHEET_SIZE, Color{132, 117, 119, 255});
@@ -40,7 +41,7 @@ void Spritesheet::drawGrid() {
 void Spritesheet::detectSpriteClick() {
     Rectangle collisionRec = {x, y, SPRITESHEET_SIZE, SPRITESHEET_SIZE};
     Vector2 mousePos = GetMousePosition();
-    if(CheckCollisionPointRec(mousePos, collisionRec) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if(CheckCollisionPointRec(mousePos, collisionRec) && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON))) {
         calculateSpriteClicked();
     }
 }

@@ -16,7 +16,6 @@ using namespace std;
 
 //TODO:
 // implement save button
-// save button
 // hotkeys for everything in toolbar
 // implement flood fill
 // implement eraser
@@ -98,15 +97,15 @@ class UI {
 
         void update(int xViewpoint, int yViewpoint) {
             bool tbClicked = toolbar.detectClicked();
-            // if(IsKeyPressed(KEY_TWO)) {
-            //     traceMode = !traceMode;
-            // }
+            if(IsKeyPressed(KEY_TWO)) {
+                traceMode = !traceMode;
+            }
             toolbar.update();
             tilemap.update(xViewpoint, yViewpoint, spritesheet.selected, windowsOpen[0], toolbar.select->isToolActive, tbClicked, traceMode, toolbar.flood->isToolActive, toolbar.eraser->isToolActive);
             if(windowsOpen[0]) {
                 spritesheet.update();
             }
-            if(IsKeyPressed(KEY_ONE)) {
+            if(IsKeyPressed(KEY_TAB)) {
                 windowsOpen[0] = !windowsOpen[0];
             }
         }
