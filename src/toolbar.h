@@ -1,7 +1,9 @@
 #ifndef TOOLBAR_H
 #define TOOLBAR_H
 #include "button.h"
+#include "action.h"
 #include "utils.h"
+#include "tilemap.h"
 class Toolbar {
     public:
         float x;
@@ -12,6 +14,7 @@ class Toolbar {
         Texture2D uiTex;
         int buttonCount = 0;
         std::vector<Button> buttons;
+        std::vector<Action> actions;
         int selectedButton = 1;
         Button *select;
         Button *flood;
@@ -20,7 +23,7 @@ class Toolbar {
         ~Toolbar();
         void constructButtons();
 
-        void update();
+        void update(Tilemap tilemap);
 
         void resetButtons();
 

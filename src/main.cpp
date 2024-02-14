@@ -100,7 +100,7 @@ class UI {
             if(IsKeyPressed(KEY_TWO)) {
                 traceMode = !traceMode;
             }
-            toolbar.update();
+            toolbar.update(tilemap);
             tilemap.update(xViewpoint, yViewpoint, spritesheet.selected, windowsOpen[0], toolbar.select->isToolActive, tbClicked, traceMode, toolbar.flood->isToolActive, toolbar.eraser->isToolActive);
             if(windowsOpen[0]) {
                 spritesheet.update();
@@ -108,6 +108,7 @@ class UI {
             if(IsKeyPressed(KEY_TAB)) {
                 windowsOpen[0] = !windowsOpen[0];
             }
+            output();
         }
 
         void output() {
@@ -134,7 +135,6 @@ int main() {
         
         ui.update(viewpoint.x, viewpoint.y);
         viewpoint.move();
-        ui.output();
         ui.draw(viewpoint.x, viewpoint.y);
         EndDrawing();
     }

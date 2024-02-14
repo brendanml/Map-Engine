@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "utils.h"
+#include "tilemap.h"
 
 class Button {
     public: 
