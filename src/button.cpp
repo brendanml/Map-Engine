@@ -5,15 +5,11 @@ Button::Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int
 : x(x), y(y), dimension(dimension), uiTex(uiTex), texXOffset(texXOffset), texYOffset(texYOffset), isToolActive(isToolActive){
 }
 void Button::update() {
-    //some stuff
+    currentlyActiveColor = isToolActive ? activeColor : inactiveColor;
 }
 
 void Button::draw() {
-    if(isToolActive) {
-        DrawRectangle(x, y, dimension, dimension, GRAY);
-    } else {
-        DrawRectangle(x, y, dimension, dimension, WHITE);
-    }
+    DrawRectangle(x, y, dimension, dimension, currentlyActiveColor);
     DrawRectangleLines(x, y, dimension, dimension, BLACK);
     DrawTextureRec(uiTex, {texXOffset, texYOffset, texSize, texSize}, {x+imgOffset, y+imgOffset}, WHITE);
 }

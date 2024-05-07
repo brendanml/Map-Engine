@@ -48,6 +48,7 @@ void Toolbar::update(Tilemap tilemap) {
     for(auto& action : actions) {
         action.update();
         if(action.detectClicked()) {
+            action.isClicked = true;
             action.perform(tilemap);
         }
     }

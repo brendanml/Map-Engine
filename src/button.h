@@ -16,6 +16,9 @@ class Button {
         float texXOffset = 0;
         float texYOffset = 0;
         bool isToolActive = false;
+        Color activeColor = GRAY;
+        Color inactiveColor = WHITE;
+        Color currentlyActiveColor = inactiveColor;
         Button();
         Button(int dimension, int x, int y, Texture2D uiTex, int texXOffset, int texYOffset, bool isToolActive);
         void update();
